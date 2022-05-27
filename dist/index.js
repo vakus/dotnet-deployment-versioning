@@ -5532,7 +5532,7 @@ async function run() {
     await execFile('git', ['config', 'user.email', 'actions@users.noreply.github.com']);
 		await execFile('git', ['config', 'user.name', 'dotnet-deployment-versioning']);
 
-    await execFile('git', ['commit', '-m', `Bumped up versions to ${version}`])
+    await execFile('git', ['commit', '-m', `'Bumped up versions to ${version}'`])
 
     core.debug(`pushing commits`);
     await execFile('git', ['push']);
