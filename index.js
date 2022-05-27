@@ -13,7 +13,7 @@ async function run() {
       return;
     }
     //fetch the tags...
-    core.debug(await execFile('git', ['fetch', '--depth=1', 'origin', 'refs/tags/*:refs/tags/*']));
+    core.debug(await execFile('git', ['fetch', 'origin', 'refs/tags/*:refs/tags/*']));
 
     //generate version
     var version = await generateVersion();
