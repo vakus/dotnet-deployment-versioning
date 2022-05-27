@@ -1,7 +1,7 @@
 const core = require('@actions/core');
 const util = require('util');
 const execFile = util.promisify(require('child_process').execFile);
-const { Globby } = require("globby");
+const glob = require("glob");
 const { Bump } = require('./bump');
 
 // most @actions toolkit packages have async methods
@@ -14,14 +14,14 @@ async function run() {
     }
 
     //generate version
-    var { _, _, _, _, version } = await generateVersion();
+    var version = await generateVersion();
 
     core.info(`full version code: ${version}`);
     
     //read the project files and update their version
     const versionFileSearch = core.getInput("dotnet_project_files") || "**/*.csproj";
 
-    const versionFiles = await Globby.default(versionFileSearch, {
+    const versionFiles = glob.sync(versionFileSearch, {
       gitignore: true,
       expandDirectories: true,
       onlyFiles: true,
@@ -74,6 +74,6 @@ async function generateVersion() {
   const patch = todayTags.split('\n').length;
 
   version += `${patch}`;
-  return { year, month, day, patch, version };
+  return version;
 }
 
