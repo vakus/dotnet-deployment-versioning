@@ -5528,6 +5528,9 @@ async function run() {
       await execFile('git', ['add', file]);
     }
 
+    await execFile('git', ['config', 'user.email', 'actions@users.noreply.github.com']);
+		await execFile('git', ['config', 'user.name', 'dotnet-deployment-versioning']);
+
     await execFile('git', ['commit', '-m', `Bumped up versions to ${version}`])
 
     const tag_git = core.getInput('git_create_tag');
