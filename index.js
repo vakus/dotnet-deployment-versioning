@@ -1,5 +1,4 @@
 const core = require('@actions/core');
-const fs = require('fs');
 const util = require('util');
 const execFile = util.promisify(require('child_process').execFile);
 const { Globby } = require("globby");
@@ -15,7 +14,7 @@ async function run() {
     }
 
     //generate version
-    var { year, month, day, patch, version } = await generateVersion();
+    var { _, _, _, _, version } = await generateVersion();
 
     core.info(`full version code: ${version}`);
     
@@ -31,7 +30,7 @@ async function run() {
     });
 
     const changedFiles = versionFiles.filter(file => {
-      bump = new Bump(file);
+      var bump = new Bump(file);
       return bump.bump(version);
     });
 
