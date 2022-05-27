@@ -1,13 +1,15 @@
-name: 'Wait'
-description: 'Wait a designated number of milliseconds'
+name: 'version-net'
+author: 'Dominik Sysojew-Osinski'
+description: 'Automatic version bumper for dotnet CI/CD pipeline'
 inputs:
-  milliseconds:  # id of input
-    description: 'number of milliseconds to wait'
-    required: true
-    default: '1000'
-outputs:
-  time: # output will be available to future steps
-    description: 'The current time after waiting'
+  dotnet_project_files:
+    description: 'list of csproj files which should be bumped up. '
+    required: false
+    default: '**/*.csproj'
+  git_create_tag:
+    description: 'should repository be tagged with the version'
+    required: false
+    default: true
 runs:
   using: 'node16'
   main: 'dist/index.js'
