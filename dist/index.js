@@ -5501,7 +5501,7 @@ async function run() {
       return;
     }
     //fetch the tags...
-    await execFile('git', ['fetch', '--depth=1', 'origin', 'refs/tags/*:refs/tags/*']);
+    core.debug(await execFile('git', ['fetch', '--depth=1', 'origin', 'refs/tags/*:refs/tags/*']));
 
     //generate version
     var version = await generateVersion();
@@ -5528,25 +5528,25 @@ async function run() {
     //stage all files for 
     for(const file of changedFiles){
       core.debug(`adding file to commit ${file}`);
-      await execFile('git', ['add', file]);
+      core.debug(await execFile('git', ['add', file]));
     }
 
-    await execFile('git', ['config', 'user.email', 'actions@users.noreply.github.com']);
-		await execFile('git', ['config', 'user.name', 'dotnet-deployment-versioning']);
+    core.debug(await execFile('git', ['config', 'user.email', 'actions@users.noreply.github.com']));
+		core.debug(await execFile('git', ['config', 'user.name', 'dotnet-deployment-versioning']));
 
     core.debug(await execFile('git', ['status']));
 
-    await execFile('git', ['commit', '-m', `Bumped up versions to ${version}`])
+    core.debug(await execFile('git', ['commit', '-m', `Bumped up versions to ${version}`]));
 
     const tag_git = core.getInput('git_create_tag');
     core.debug(`git_create_tag is set to ${tag_git}`);
     if(tag_git === true){
       core.debug(`creating tag ${version}`);
-      await execFile('git', ['tag', version, '-m', version]);
+      core.debug(await execFile('git', ['tag', version, '-m', version]));
     }
     
     core.debug(`pushing commits`);
-    await execFile('git', ['push', '--tags']);
+    core.debug(await execFile('git', ['push', '--all']));
 
   } catch (error) {
     core.setFailed(error.message);
