@@ -36,12 +36,12 @@ class Bump{
 
     bump(version){
         const originalContent = fs.readFileSync(this.file, "utf-8").toString();
-        var bumppedContent;
+        var bumppedContent = originalContent;
         var modified = false;
 
         this.versions.forEach((v, k) => {
             core.debug(`matching ${k}`);
-            const matches = v.exec(originalContent);
+            const matches = v.exec(bumppedContent);
 
             if(matches && matches.length === 2){
                 core.debug(`match found`);
@@ -50,7 +50,7 @@ class Bump{
                 const originMatch = matches[0].toString();
                 core.debug(`full match: ${originMatch}`);
                 const bumppedMatch = originMatch.replace(originVersion, version);
-                bumppedContent = originalContent.replace(originMatch, bumppedMatch);
+                bumppedContent = bumppedContent.replace(originMatch, bumppedMatch);
                 modified = true;
             }
         });
