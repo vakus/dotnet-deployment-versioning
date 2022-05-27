@@ -46,6 +46,9 @@ async function run() {
 
     await execFile('git', ['commit', '-m', `Bumped up versions to ${version}`])
 
+    core.debug(`pushing commits`);
+    await execFile('git', ['push']);
+
     const tag_git = core.getInput('git_create_tag');
     core.debug(`git_create_tag is set to ${tag_git}`);
     if(tag_git === true){
@@ -53,9 +56,6 @@ async function run() {
       await execFile('git', ['tag', version, '-m', version]);
       await execFile('git', ['push', 'origin', version]);
     }
-
-    core.debug(`pushing commits`);
-    await execFile('git', ['push']);
 
   } catch (error) {
     core.setFailed(error.message);
