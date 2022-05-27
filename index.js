@@ -44,18 +44,17 @@ async function run() {
     await execFile('git', ['config', 'user.email', 'actions@users.noreply.github.com']);
 		await execFile('git', ['config', 'user.name', 'dotnet-deployment-versioning']);
 
-    await execFile('git', ['commit', '-m', `'Bumped up versions to ${version}'`])
-
-    core.debug(`pushing commits`);
-    await execFile('git', ['push']);
+    await execFile('git', ['commit', '-m', `"Bumped up versions to ${version}"`])
 
     const tag_git = core.getInput('git_create_tag');
     core.debug(`git_create_tag is set to ${tag_git}`);
     if(tag_git === true){
       core.debug(`creating tag ${version}`);
       await execFile('git', ['tag', version, '-m', version]);
-      await execFile('git', ['push', 'origin', version]);
     }
+    
+    core.debug(`pushing commits`);
+    await execFile('git', ['push', '--tags']);
 
   } catch (error) {
     core.setFailed(error.message);
