@@ -5500,6 +5500,8 @@ async function run() {
       core.info(`Run triggered by tag ${process.env.GITHUB_REF.replace('refs/tags/', '')}. `);
       return;
     }
+    //fetch the tags...
+    await execFile('git', ['fetch', '--depth=1', 'origin', 'refs/tags/*:refs/tags/*']);
 
     //generate version
     var version = await generateVersion();
