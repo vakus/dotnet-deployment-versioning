@@ -29,11 +29,15 @@ export class Bump{
         var modified = false;
 
         this.versions.forEach((v, k) => {
+            core.debug(`matching ${k}`);
             const matches = v.exec(originalContent);
 
             if(matches && matches.length === 2){
+                core.debug(`match found`);
                 const originVersion = matches[1].toString();
+                core.debug(`original version: ${originVersion}`);
                 const originMatch = matches[0].toString();
+                core.debug(`full match: ${originMatch}`);
                 const bumppedMatch = originMatch.replace(originVersion, version);
                 bumppedContent = originalContent.replace(originMatch, bumppedMatch);
                 modified = true;
