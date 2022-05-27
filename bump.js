@@ -3,11 +3,11 @@ const fs = require('fs');
 
 export class Bump{
     
-    versionRex = /<Version>[\S]*(([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+))[\S]*<\/Version>/i;
-    packageVersionRex = /<PackageVersion>[\S]*(([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+))[\S]*<\/PackageVersion>/i;
-    assemblyVersionRex = /<AssemblyVersion>[\S]*(([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+))[\S]*<\/AssemblyVersion>/i;
-    fileVersionRex = /<FileVersion>[\S]*(([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+))[\S]*<\/FileVersion>/i;
-    informationalVersionRex = /<InformationalVersion>[\S]*(([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+))[\S]*<\/InformationalVersion>/gi;
+    versionRex = /<Version>([\S]*)<\/Version>/i;
+    packageVersionRex = /<PackageVersion>([\S]*)<\/PackageVersion>/i;
+    assemblyVersionRex = /<AssemblyVersion>([\S]*)<\/AssemblyVersion>/i;
+    fileVersionRex = /<FileVersion>([\S]*)<\/FileVersion>/i;
+    informationalVersionRex = /<InformationalVersion>([\S]*)<\/InformationalVersion>/gi;
 
     versions = new Map([
         ["Version", this.versionRex],
@@ -31,7 +31,7 @@ export class Bump{
         this.versions.forEach((v, k) => {
             const matches = v.exec(originalContent);
 
-            if(matches && matches.length === 6){
+            if(matches && matches.length === 2){
                 const originVersion = matches[1].toString();
                 const originMatch = matches[0].toString();
                 const bumppedMatch = originMatch.replace(originVersion, version);
