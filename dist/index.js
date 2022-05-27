@@ -5525,6 +5525,7 @@ async function run() {
 
     //stage all files for 
     for(const file of changedFiles){
+      core.debug(`adding file to commit ${file}`);
       await execFile('git', ['add', file]);
     }
 
@@ -5534,10 +5535,14 @@ async function run() {
     await execFile('git', ['commit', '-m', `Bumped up versions to ${version}`])
 
     const tag_git = core.getInput('git_create_tag');
+    core.debug(`git_create_tag is set to ${tag_git}`);
     if(tag_git === true){
+      core.debug(`creating tag ${version}`);
       await execFile('git', ['tag', version, '-m', version]);
       await execFile('git', ['push', 'origin', version]);
     }
+
+    core.debug(`pushing commits`);
     await execFile('git', ['push']);
 
   } catch (error) {
