@@ -4,68 +4,88 @@ const execFile = util.promisify(require('child_process').execFile);
 const glob = require("glob");
 const { Bump } = require('./bump');
 
-// most @actions toolkit packages have async methods
 async function run() {
   try {
     //prevent self triggering
-    if(process.env.GITHUB_REF.startsWith('refs/tags/')){
+    if (process.env.GITHUB_REF.startsWith('refs/tags/')) {
       core.info(`Run triggered by tag ${process.env.GITHUB_REF.replace('refs/tags/', '')}. `);
       return;
     }
-    //fetch the tags...
-    core.debug(await execFile('git', ['fetch', 'origin', 'refs/tags/*:refs/tags/*']));
+    await gitUpdateRepo();
 
-    core.debug(await execFile('git', ['pull']));
-    
-    //generate version
-    var version = await generateVersion();
+    await gitSetup();
 
-    core.info(`full version code: ${version}`);
-    
-    //read the project files and update their version
-    const versionFileSearch = core.getInput("dotnet_project_files") || "**/*.csproj";
+    const version = await generateVersion();
 
-    const versionFiles = glob.sync(versionFileSearch, {
-      gitignore: true,
-      expandDirectories: true,
-      onlyFiles: true,
-      ignore: [],
-      cwd: process.cwd(),
-    });
+    const changedFiles = dotnetUpdateProjects(version);
 
-    const changedFiles = versionFiles.filter(file => {
-      var bump = new Bump(file);
-      return bump.bump(version);
-    });
+    await gitStageAndCommit(changedFiles, version);
 
+    await gitTagVersion(version);
 
-    //stage all files for 
-    for(const file of changedFiles){
-      core.debug(`adding file to commit ${file}`);
-      core.debug(await execFile('git', ['add', file]));
-    }
-
-    core.debug(await execFile('git', ['config', 'user.email', 'actions@users.noreply.github.com']));
-		core.debug(await execFile('git', ['config', 'user.name', 'dotnet-deployment-versioning']));
-
-    core.debug(await execFile('git', ['status']));
-
-    core.debug(await execFile('git', ['commit', '-m', `Bumped up versions to ${version}`]));
-
-
-    core.debug(`pushing commits`);
-    core.debug(await execFile('git', ['push']));
-
-    core.debug(`creating tag ${version}`);
-    core.debug(await execFile('git', ['tag', version, '-m', version]));
-    core.debug(await execFile('git', ['push', 'origin', version]));
-    
+    await gitPushAll();
   } catch (error) {
     core.setFailed(error.message);
   }
 }
 
 run();
+
+async function gitPushAll() {
+  core.info(`pushing commits`);
+  core.debug(await execFile('git', ['push', 'origin', '--all']));
+  core.info(`pushing tags`);
+  core.debug(await execFile('git', ['push', 'origin', '--tags']));
+}
+
+async function gitTagVersion(version) {
+  core.info(`creating tag ${version}`);
+  core.debug(await execFile('git', ['tag', version, '-m', version]));
+}
+
+async function gitStageAndCommit(changedFiles, version) {
+  for (const file of changedFiles) {
+    core.debug(`adding file to commit ${file}`);
+    core.debug(await execFile('git', ['add', file]));
+  }
+
+  core.debug(await execFile('git', ['status']));
+
+  core.debug(await execFile('git', ['commit', '-m', `Bumped up versions to ${version}`]));
+}
+
+async function gitSetup() {
+  core.debug(await execFile('git', ['config', 'user.email', 'actions@users.noreply.github.com']));
+  core.debug(await execFile('git', ['config', 'user.name', 'dotnet-deployment-versioning']));
+}
+
+function dotnetUpdateProjects(version) {
+  const versionFileSearch = core.getInput("dotnet_project_files") || "**/*.csproj";
+
+  core.debug(`Searching for projects using pattern: '${versionFileSearch}'`);
+
+  const versionFiles = glob.sync(versionFileSearch, {
+    gitignore: true,
+    expandDirectories: true,
+    onlyFiles: true,
+    ignore: [],
+    cwd: process.cwd(),
+  });
+
+  const changedFiles = versionFiles.filter(file => {
+    var bump = new Bump(file);
+    return bump.bump(version);
+  });
+
+  return changedFiles;
+}
+
+async function gitUpdateRepo() {
+  core.info(`fetching tags`);
+  core.debug(await execFile('git', ['fetch', 'origin', 'refs/tags/*:refs/tags/*']));
+  core.info(`pulling updates`);
+  core.debug(await execFile('git', ['pull']));
+}
 
 async function generateVersion() {
   core.info(`Generating dotnet version`);
@@ -85,6 +105,7 @@ async function generateVersion() {
   const patch = todayTags.split('\n').length;
 
   version += `${patch}`;
+
+  core.info(`full version code: ${version}`);
   return version;
 }
-
