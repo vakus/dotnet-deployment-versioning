@@ -6,10 +6,6 @@ inputs:
     description: 'list of csproj files which should be bumped up. '
     required: false
     default: '**/*.csproj'
-  git_create_tag:
-    description: 'should repository be tagged with the version'
-    required: false
-    default: true
 runs:
   using: 'node16'
   main: 'dist/index.js'
