@@ -1,6 +1,8 @@
 name: 'version-net'
 author: 'Dominik Sysojew-Osinski'
 description: 'Automatic version bumper for dotnet CI/CD pipeline'
+icon: bookmark
+color: blue
 inputs:
   dotnet_project_files:
     description: 'list of csproj files which should be bumped up. '
