@@ -1,7 +1,7 @@
 {
-  "name": "javascript-action",
+  "name": "dotnet-deployment-versioning",
   "version": "1.0.0",
-  "description": "JavaScript Action Template",
+  "description": "Action for updating .NET project versions",
   "main": "index.js",
   "scripts": {
     "lint": "eslint .",
@@ -11,19 +11,23 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/javascript-action.git"
+    "url": "git+https://github.com/vakus/dotnet-deployment-versioning"
   },
   "keywords": [
-    "GitHub",
-    "Actions",
-    "JavaScript"
+    "github",
+    "actions",
+    "dotnet",
+    "version",
+    "git",
+    "tag",
+    "release"
   ],
-  "author": "",
+  "author": "Dominik Sysojew-Osinski",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/actions/javascript-action/issues"
+    "url": "https://github.com/vakus/dotnet-deployment-versioning/issues"
   },
-  "homepage": "https://github.com/actions/javascript-action#readme",
+  "homepage": "https://github.com/vakus/dotnet-deployment-versioning/blob/main/README.md",
   "dependencies": {
     "@actions/core": "^1.2.5",
     "glob": "^8.0.3"
