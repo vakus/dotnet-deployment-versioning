@@ -15,6 +15,8 @@ async function run() {
     //fetch the tags...
     core.debug(await execFile('git', ['fetch', 'origin', 'refs/tags/*:refs/tags/*']));
 
+    core.debug(await execFile('git', ['pull']));
+    
     //generate version
     var version = await generateVersion();
 
@@ -49,6 +51,7 @@ async function run() {
     core.debug(await execFile('git', ['status']));
 
     core.debug(await execFile('git', ['commit', '-m', `Bumped up versions to ${version}`]));
+
 
     core.debug(`pushing commits`);
     core.debug(await execFile('git', ['push']));
