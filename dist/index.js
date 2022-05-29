@@ -5545,16 +5545,10 @@ async function run() {
     core.debug(`pushing commits`);
     core.debug(await execFile('git', ['push']));
 
-    const tag_git = core.getInput('git_create_tag');
-    core.debug(`git_create_tag is set to ${tag_git}`);
-    if(tag_git.toLowerCase() == 'true'){
-      core.debug(`creating tag ${version}`);
-      core.debug(await execFile('git', ['tag', version, '-m', version]));
-      core.debug(await execFile('git', ['push', 'origin', version]));
-    }
+    core.debug(`creating tag ${version}`);
+    core.debug(await execFile('git', ['tag', version, '-m', version]));
+    core.debug(await execFile('git', ['push', 'origin', version]));
     
-    
-
   } catch (error) {
     core.setFailed(error.message);
   }
