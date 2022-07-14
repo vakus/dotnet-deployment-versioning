@@ -1,7 +1,6 @@
 const process = require('process');
 const cp = require('child_process');
 const path = require('path');
-const util = require('util');
 const os = require('os');
 const fs = require('fs');
 const { assert } = require('console');
@@ -9,7 +8,6 @@ const { assert } = require('console');
 const testDir = path.join(os.tmpdir(), "dotnet-deployment-versioning-test");
 
 test('update csproj without push', () => {
-  //create temporary git project
   createCleanTestRepository();
 
   process.env['INPUT_AUTO_PUSH'] = 'false';
@@ -40,3 +38,11 @@ function createCleanTestRepository() {
     cwd: os.tmpdir()
   });
 }
+
+afterAll(() => {
+  if (fs.existsSync(testDir)) {
+    fs.rmSync(testDir, {
+      recursive: true
+    });
+  }
+});
