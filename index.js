@@ -11,6 +11,15 @@ async function run() {
       core.info(`Run triggered by tag ${process.env.GITHUB_REF.replace('refs/tags/', '')}. `);
       return;
     }
+    
+    const ref = await execFile('git', ['rev-parse', '--symbolic-full-name', 'HEAD']);
+    //only run if on branch
+    if(ref.stdout == 'HEAD\n'){
+      //we are not on branch, and we can not continue
+      core.info("Reference is not on branch, aborting bumping.");
+      return;
+    }
+
     await gitUpdateRepo();
 
     await gitSetup();

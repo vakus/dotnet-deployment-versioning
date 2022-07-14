@@ -28,6 +28,32 @@ test('update csproj without push', () => {
   assert(status.indexOf("by 1 commit.") > -1, "Branch should be ahead of remote by 1 commit");
 });
 
+test('update csproj on detached head', () => {
+
+  createCleanTestRepository();
+
+  process.env['INPUT_AUTO_PUSH'] = 'false';
+  process.env['GITHUB_REF'] = 'test';
+
+  cp.execSync('git checkout 1d27974c187b5d87ad1a0e9202818db8c45f5c7e', {
+    cwd: testDir
+  });
+
+  const ip = path.join(__dirname, 'index.js');
+  const result = cp.execSync(`node ${ip}`, {
+    cwd: testDir,
+    env: process.env
+  }).toString();
+  console.log(result);
+
+  const status = cp.execSync('git status', {
+    cwd: testDir
+  }).toString();
+
+  assert(status.indexOf("Your branch is ahead of") > -1, "Branch should be ahead of remote");
+  assert(status.indexOf("by 1 commit.") > -1, "Branch should be ahead of remote by 1 commit");
+});
+
 function createCleanTestRepository() {
   if (fs.existsSync(testDir)) {
     fs.rmSync(testDir, {
