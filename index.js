@@ -32,10 +32,14 @@ async function run() {
 run();
 
 async function gitPushAll() {
-  core.info(`pushing commits`);
-  core.debug(await execFile('git', ['push', 'origin', '--all']));
-  core.info(`pushing tags`);
-  core.debug(await execFile('git', ['push', 'origin', '--tags']));
+  const auto_push = (core.getInput("auto_push") || "true").toLowerCase();
+  
+  if(auto_push == "true"){
+    core.info(`pushing commits`);
+    core.debug(await execFile('git', ['push', 'origin', '--all']));
+    core.info(`pushing tags`);
+    core.debug(await execFile('git', ['push', 'origin', '--tags']));
+  }
 }
 
 async function gitTagVersion(version) {
@@ -51,7 +55,7 @@ async function gitStageAndCommit(changedFiles, version) {
 
   core.debug(await execFile('git', ['status']));
 
-  core.debug(await execFile('git', ['commit', '-m', `Bumped up versions to ${version}`]));
+  core.debug(await execFile('git', ['commit', '-m', `Bumped up versions to ${version}`, '--no-gpg-sign']));
 }
 
 async function gitSetup() {
