@@ -9,6 +9,10 @@ inputs:
     description: 'list of csproj files which should be bumped up. '
     required: false
     default: '**/*.csproj'
+  auto_push:
+    description: 'should bump up automatically push changes'
+    required: false
+    default: 'true'
 runs:
   using: 'node16'
   main: 'dist/index.js'
