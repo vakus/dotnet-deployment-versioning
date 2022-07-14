@@ -4,7 +4,7 @@ Github Action to automatically update .NET Core project files with new generated
 - Generates the version using `yy.MM.dd.patch` format. `patch` starts at 1 on new `yy.MM.dd` tags and increments every deployment on the same `yy.MM.dd`
 - Commits changes to .csproj files.
 - Creates git tag with said version.
-- Pushes changes to your git repository.
+- [optional] Pushes changes to your git repository.
 
 ## Usage
 
@@ -19,17 +19,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: vakus/dotnet-deployment-versioning@v1.0
+      - uses: vakus/dotnet-deployment-versioning@v1.1
 ```
 
 You can also specify csproj files to be affected.
 ```yml
-      - uses: vakus/dotnet-deployment-versioning@v1.0
+      - uses: vakus/dotnet-deployment-versioning@v1.1
         with:
           #You can use Glob pattern string to find csproj files
           dotnet_project_files: "**/*.csproj"
 ```
 
+If you do not want the script to push changes
+```yml
+      - uses: vakus/dotnet-deployment-versioning@v1.1
+        with:
+          auto_push: "false"
+```
 
 ## Related
 
