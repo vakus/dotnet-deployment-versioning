@@ -2,13 +2,8 @@ require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
 /***/ 43:
-/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-"use strict";
-__nccwpck_require__.r(__webpack_exports__);
-/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
-/* harmony export */   "Bump": () => (/* binding */ Bump)
-/* harmony export */ });
 const core = __nccwpck_require__(186);
 const fs = __nccwpck_require__(147);
 
@@ -63,6 +58,7 @@ class Bump{
     }
 }
 
+module.exports.Bump = Bump;
 
 /***/ }),
 
@@ -5454,34 +5450,6 @@ module.exports = require("util");
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/define property getters */
-/******/ 	(() => {
-/******/ 		// define getter functions for harmony exports
-/******/ 		__nccwpck_require__.d = (exports, definition) => {
-/******/ 			for(var key in definition) {
-/******/ 				if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
-/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-/******/ 				}
-/******/ 			}
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
-/******/ 	(() => {
-/******/ 		__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/make namespace object */
-/******/ 	(() => {
-/******/ 		// define __esModule on exports
-/******/ 		__nccwpck_require__.r = (exports) => {
-/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-/******/ 			}
-/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
-/******/ 		};
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
@@ -5524,10 +5492,14 @@ async function run() {
 run();
 
 async function gitPushAll() {
-  core.info(`pushing commits`);
-  core.debug(await execFile('git', ['push', 'origin', '--all']));
-  core.info(`pushing tags`);
-  core.debug(await execFile('git', ['push', 'origin', '--tags']));
+  const auto_push = (core.getInput("auto_push") || "true").toLowerCase();
+  
+  if(auto_push == "true"){
+    core.info(`pushing commits`);
+    core.debug(await execFile('git', ['push', 'origin', '--all']));
+    core.info(`pushing tags`);
+    core.debug(await execFile('git', ['push', 'origin', '--tags']));
+  }
 }
 
 async function gitTagVersion(version) {
@@ -5543,7 +5515,7 @@ async function gitStageAndCommit(changedFiles, version) {
 
   core.debug(await execFile('git', ['status']));
 
-  core.debug(await execFile('git', ['commit', '-m', `Bumped up versions to ${version}`]));
+  core.debug(await execFile('git', ['commit', '-m', `Bumped up versions to ${version}`, '--no-gpg-sign']));
 }
 
 async function gitSetup() {
