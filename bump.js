@@ -1,7 +1,7 @@
 const core = require('@actions/core');
 const fs = require('fs');
 
-export class Bump{
+class Bump{
     
     versionRex = /<Version>([\S]*)<\/Version>/i;
     packageVersionRex = /<PackageVersion>([\S]*)<\/PackageVersion>/i;
@@ -51,3 +51,5 @@ export class Bump{
         return modified;
     }
 }
+
+module.exports.Bump = Bump;
