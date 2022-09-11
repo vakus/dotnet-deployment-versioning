@@ -22,7 +22,7 @@ async function run() {
 
     await gitUpdateRepo();
 
-    await gitSetup();
+    await gitSetupAuthor();
 
     const version = await generateVersion();
 
@@ -67,7 +67,7 @@ async function gitStageAndCommit(changedFiles, version) {
   core.debug(await execFile('git', ['commit', '-m', `Bumped up versions to ${version}`, '--no-gpg-sign']));
 }
 
-async function gitSetup() {
+async function gitSetupAuthor() {
   core.debug(await execFile('git', ['config', 'user.email', 'actions@users.noreply.github.com']));
   core.debug(await execFile('git', ['config', 'user.name', 'dotnet-deployment-versioning']));
 }
@@ -86,7 +86,7 @@ function dotnetUpdateProjects(version) {
   });
 
   const changedFiles = versionFiles.filter(file => {
-    var bump = new Bump(file);
+    let bump = new Bump(file);
     return bump.bump(version);
   });
 
@@ -109,7 +109,7 @@ async function generateVersion() {
   const day = date.getDate();
 
   //generate patch code
-  var version = `${year}.${month}.${day}.`;
+  let version = `${year}.${month}.${day}.`;
 
   core.debug(`Date based version so far '${version}'`);
 
