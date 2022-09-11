@@ -22,8 +22,6 @@ async function run() {
 
     await gitUpdateRepo();
 
-    await gitSetupAuthor();
-
     const version = await generateVersion();
 
     const changedFiles = dotnetUpdateProjects(version);
@@ -51,7 +49,7 @@ async function gitPushAll() {
 
 async function gitTagVersion(version) {
   core.info(`creating tag ${version}`);
-  core.debug(await execFile('git', ['tag', version, '-m', version]));
+  core.debug(await execFile('git', ['-c', "user.name='dotnet-deployment-versioning'", '-c', "user.email='actions@users.noreply.github.com'", 'tag', version, '-m', version]));
 }
 
 async function gitStageAndCommit(changedFiles, version) {
@@ -62,14 +60,8 @@ async function gitStageAndCommit(changedFiles, version) {
 
   core.debug(await execFile('git', ['status']));
 
-  core.debug(await execFile('git', ['commit', '-m', `Bumped up versions to ${version}`, '--no-gpg-sign']));
+  core.debug(await execFile('git', ['-c', "user.name='dotnet-deployment-versioning'", '-c', "user.email='actions@users.noreply.github.com'", 'commit', '-m', `Bumped up versions to ${version}`, '--no-gpg-sign']));
 }
-
-async function gitSetupAuthor() {
-  core.debug(await execFile('git', ['config', 'user.email', 'actions@users.noreply.github.com']));
-  core.debug(await execFile('git', ['config', 'user.name', 'dotnet-deployment-versioning']));
-}
-
 function dotnetUpdateProjects(version) {
   const versionFileSearch = core.getInput("dotnet_project_files") || "**/*.csproj";
 
