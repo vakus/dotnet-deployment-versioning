@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "eslint .",
     "prepare": "ncc build index.js -o dist --source-map --license licenses.txt",
-    "test": "jest",
+    "test": "jest --runInBand",
     "all": "npm run lint && npm run prepare && npm run test"
   },
   "repository": {
@@ -36,5 +36,12 @@
     "@vercel/ncc": "^0.34.0",
     "eslint": "^8.23.0",
     "jest": "^29.0.3"
+  },
+  "jest":{
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "index.js",
+      "bump.js"
+    ]
   }
 }
