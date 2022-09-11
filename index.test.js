@@ -24,8 +24,9 @@ test('update csproj without push', () => {
     cwd: testDir
   }).toString();
 
-  assert(status.indexOf("Your branch is ahead of") > -1, "Branch should be ahead of remote");
-  assert(status.indexOf("by 1 commit.") > -1, "Branch should be ahead of remote by 1 commit");
+  
+  expect(status).toContain("Your branch is ahead of");
+  expect(status).toContain("by 1 commit");
 });
 
 test('update csproj on detached head', () => {
@@ -50,8 +51,8 @@ test('update csproj on detached head', () => {
     cwd: testDir
   }).toString();
 
-  assert(status.indexOf("Your branch is ahead of") > -1, "Branch should be ahead of remote");
-  assert(status.indexOf("by 1 commit.") > -1, "Branch should be ahead of remote by 1 commit");
+  expect(status).toContain("HEAD detached at 1d27974");
+  expect(status).toContain("nothing to commit, working tree clean");
 });
 
 function createCleanTestRepository() {
