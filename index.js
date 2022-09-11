@@ -7,7 +7,7 @@ const { Bump } = require('./bump');
 async function run() {
   try {
     //prevent self triggering
-    if (process.env.GITHUB_REF.startsWith('refs/tags/')) {
+    if (process.env.GITHUB_REF?.startsWith('refs/tags/') ?? false) {
       core.info(`Run triggered by tag ${process.env.GITHUB_REF.replace('refs/tags/', '')}. `);
       return;
     }
