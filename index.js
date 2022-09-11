@@ -62,12 +62,12 @@ async function gitStageAndCommit(changedFiles, version) {
 
   core.debug(await execFile('git', ['status']));
 
-  core.debug(await execFile('git', ['commit', '-m', `Bumped up versions to ${version}`, '--no-gpg-sign']));
+  core.debug(await execFile('git', ['-c', "user.name='dotnet-deployment-versioning'", '-c', "user.email='actions@users.noreply.github.com'", 'commit', '-m', `Bumped up versions to ${version}`, '--no-gpg-sign']));
 }
 
 async function gitSetupAuthor() {
-  core.debug(await execFile('git', ['config', 'user.email', 'actions@users.noreply.github.com']));
-  core.debug(await execFile('git', ['config', 'user.name', 'dotnet-deployment-versioning']));
+  // core.debug(await execFile('git', ['config', 'user.email', 'actions@users.noreply.github.com']));
+  // core.debug(await execFile('git', ['config', 'user.name', 'dotnet-deployment-versioning']));
 }
 
 function dotnetUpdateProjects(version) {
