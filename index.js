@@ -49,7 +49,7 @@ async function gitPushAll() {
 
 async function gitTagVersion(version) {
   core.info(`creating tag ${version}`);
-  core.debug(await execFile('git', ['tag', version, '-m', version]));
+  core.debug(await execFile('git', ['-c', "user.name='dotnet-deployment-versioning'", '-c', "user.email='actions@users.noreply.github.com'", 'tag', version, '-m', version]));
 }
 
 async function gitStageAndCommit(changedFiles, version) {
@@ -104,7 +104,7 @@ async function generateVersion() {
   core.debug(`Date based version so far '${version}'`);
 
   //get count of tags starting with current version number
-  const { stdout: todayTags } = await execFile('git', ['-c', "user.name='dotnet-deployment-versioning'", '-c', "user.email='actions@users.noreply.github.com'", 'tag', '-l', `${version}*`]);
+  const { stdout: todayTags } = await execFile('git', ['tag', '-l', `${version}*`]);
   const patch = todayTags.split('\n').length;
 
   version += `${patch}`;
