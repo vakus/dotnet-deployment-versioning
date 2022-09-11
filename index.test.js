@@ -50,7 +50,22 @@ test('update csproj on detached head', async () => {
   expect(status).toContain("nothing to commit, working tree clean");
 });
 
+test('update triggered by tag is ignored', async() => {
+  const myTestDir = createCleanTestRepository();
 
+  process.env['INPUT_AUTO_PUSH'] = 'false';
+  process.env['GITHUB_REF'] = 'refs/tags/test';
+
+  await runBumpup(myTestDir);
+
+  const status = cp.execSync('git status', {
+    cwd: myTestDir
+  }).toString();
+
+  expect(status).toContain("On branch master");
+  expect(status).toContain("Your branch is up to date with 'origin/master'");
+  expect(status).toContain("nothing to commit, working tree clean");
+});
 
 async function runBumpup(myTestDir) {
   oldCwd = process.cwd();
