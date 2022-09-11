@@ -38,8 +38,6 @@ async function run() {
   }
 }
 
-run();
-
 async function gitPushAll() {
   const auto_push = (core.getInput("auto_push") || "true").toLowerCase();
   
@@ -122,3 +120,10 @@ async function generateVersion() {
   core.info(`full version code: ${version}`);
   return version;
 }
+
+
+if(require.main === module){
+  run();
+}
+
+module.exports = { run };

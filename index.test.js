@@ -3,22 +3,18 @@ const cp = require('child_process');
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
-const { assert } = require('console');
+
+const { run } = require("./index");
 
 const testDir = path.join(os.tmpdir(), "dotnet-deployment-versioning-test");
 
-test('update csproj without push', () => {
+test('update csproj without push', async () => {
   createCleanTestRepository();
 
   process.env['INPUT_AUTO_PUSH'] = 'false';
   process.env['GITHUB_REF'] = 'test';
 
-  const ip = path.join(__dirname, 'index.js');
-  const result = cp.execSync(`node ${ip}`, {
-    cwd: testDir,
-    env: process.env
-  }).toString();
-  console.log(result);
+  await runBumpup();
 
   const status = cp.execSync('git status', {
     cwd: testDir
@@ -29,7 +25,7 @@ test('update csproj without push', () => {
   expect(status).toContain("by 1 commit");
 });
 
-test('update csproj on detached head', () => {
+test('update csproj on detached head', async () => {
 
   createCleanTestRepository();
 
@@ -40,12 +36,7 @@ test('update csproj on detached head', () => {
     cwd: testDir
   });
 
-  const ip = path.join(__dirname, 'index.js');
-  const result = cp.execSync(`node ${ip}`, {
-    cwd: testDir,
-    env: process.env
-  }).toString();
-  console.log(result);
+  await runBumpup();
 
   const status = cp.execSync('git status', {
     cwd: testDir
@@ -54,6 +45,13 @@ test('update csproj on detached head', () => {
   expect(status).toContain("HEAD detached at 1d27974");
   expect(status).toContain("nothing to commit, working tree clean");
 });
+
+async function runBumpup() {
+  oldCwd = process.cwd();
+  process.chdir(testDir);
+  await run();
+  process.chdir(oldCwd);
+}
 
 function createCleanTestRepository() {
   if (fs.existsSync(testDir)) {
