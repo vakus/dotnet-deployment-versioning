@@ -19,12 +19,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: vakus/dotnet-deployment-versioning@v1.2
+      - uses: vakus/dotnet-deployment-versioning@v1.2.1
 ```
 
 You can also specify csproj files to be affected.
 ```yml
-      - uses: vakus/dotnet-deployment-versioning@v1.2
+      - uses: vakus/dotnet-deployment-versioning@v1.2.1
         with:
           #You can use Glob pattern string to find csproj files
           dotnet_project_files: "**/*.csproj"
@@ -32,7 +32,7 @@ You can also specify csproj files to be affected.
 
 If you do not want the script to push changes
 ```yml
-      - uses: vakus/dotnet-deployment-versioning@v1.2
+      - uses: vakus/dotnet-deployment-versioning@v1.2.1
         with:
           auto_push: "false"
 ```
