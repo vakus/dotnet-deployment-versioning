@@ -22,8 +22,6 @@ async function run() {
 
     await gitUpdateRepo();
 
-    await gitSetupAuthor();
-
     const version = await generateVersion();
 
     const changedFiles = dotnetUpdateProjects(version);
@@ -64,12 +62,6 @@ async function gitStageAndCommit(changedFiles, version) {
 
   core.debug(await execFile('git', ['-c', "user.name='dotnet-deployment-versioning'", '-c', "user.email='actions@users.noreply.github.com'", 'commit', '-m', `Bumped up versions to ${version}`, '--no-gpg-sign']));
 }
-
-async function gitSetupAuthor() {
-  // core.debug(await execFile('git', ['config', 'user.email', 'actions@users.noreply.github.com']));
-  // core.debug(await execFile('git', ['config', 'user.name', 'dotnet-deployment-versioning']));
-}
-
 function dotnetUpdateProjects(version) {
   const versionFileSearch = core.getInput("dotnet_project_files") || "**/*.csproj";
 
@@ -112,7 +104,7 @@ async function generateVersion() {
   core.debug(`Date based version so far '${version}'`);
 
   //get count of tags starting with current version number
-  const { stdout: todayTags } = await execFile('git', ['tag', '-l', `${version}*`]);
+  const { stdout: todayTags } = await execFile('git', ['-c', "user.name='dotnet-deployment-versioning'", '-c', "user.email='actions@users.noreply.github.com'", 'tag', '-l', `${version}*`]);
   const patch = todayTags.split('\n').length;
 
   version += `${patch}`;
