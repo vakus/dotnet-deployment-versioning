@@ -19,6 +19,7 @@ test('update csproj without push', async () => {
     cwd: myTestDir
   }).toString();
 
+  
   expect(status).toContain("Your branch is ahead of");
   expect(status).toContain("by 1 commit");
 
