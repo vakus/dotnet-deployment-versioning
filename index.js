@@ -22,8 +22,6 @@ async function run() {
 
     await gitUpdateRepo();
 
-    await gitSetupAuthor();
-
     const version = await generateVersion();
 
     const changedFiles = dotnetUpdateProjects(version);
@@ -62,12 +60,7 @@ async function gitStageAndCommit(changedFiles, version) {
 
   core.debug(await execFile('git', ['status']));
 
-  core.debug(await execFile('git', ['commit', '-m', `Bumped up versions to ${version}`, '--no-gpg-sign']));
-}
-
-async function gitSetupAuthor() {
-  core.debug(await execFile('git', ['config', 'user.email', 'actions@users.noreply.github.com']));
-  core.debug(await execFile('git', ['config', 'user.name', 'dotnet-deployment-versioning']));
+  core.debug(await execFile('git', ['commit', '-m', `Bumped up versions to ${version}`, '--no-gpg-sign', '--author', 'dotnet-deployment-versioning <actions@users.noreply.github.com>']));
 }
 
 function dotnetUpdateProjects(version) {

@@ -20,9 +20,14 @@ test('update csproj without push', async () => {
     cwd: testDir
   }).toString();
 
-  
   expect(status).toContain("Your branch is ahead of");
   expect(status).toContain("by 1 commit");
+
+  const author = cp.execSync('git log -1 --pretty=format:"%an <%ae>"', {
+    cwd: testDir
+  }).toString();
+
+  expect(author).toBe("dotnet-deployment-versioning <actions@users.noreply.github.com>")
 });
 
 test('update csproj on detached head', async () => {
