@@ -68,7 +68,7 @@ test('update triggered by tag is ignored', async() => {
 });
 
 async function runBumpup(myTestDir) {
-  oldCwd = process.cwd();
+  let oldCwd = process.cwd();
   process.chdir(myTestDir);
   await run();
   process.chdir(oldCwd);
