@@ -49,7 +49,7 @@ async function gitPushAll() {
 
 async function gitTagVersion(version) {
   core.info(`creating tag ${version}`);
-  core.debug(await execFile('git', ['-c', "user.name='dotnet-deployment-versioning'", '-c', "user.email='actions@users.noreply.github.com'", 'tag', version, '-m', version]));
+  core.debug(await execFile('git', ['-c', "user.name='dotnet-deployment-versioning'", '-c', "user.email='actions@users.noreply.github.com'", 'tag', '--no-sign', version, '-m', version]));
 }
 
 async function gitStageAndCommit(changedFiles, version) {
