@@ -2,7 +2,8 @@
 
 Github Action to automatically update .NET Core project files with new generated version number (.csproj).
 - Generates the version using `yy.MM.dd.patch` format. `patch` starts at 1 on new `yy.MM.dd` tags and increments every deployment on the same `yy.MM.dd`
-- Commits changes to .csproj files.
+- Makes changes to .csproj files.
+- [Optional] create commit with changes
 - Creates git tag with said version.
 - [optional] Pushes changes to your git repository.
 
@@ -19,12 +20,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: vakus/dotnet-deployment-versioning@v1.2.1
+      - uses: vakus/dotnet-deployment-versioning@v1.2.2
 ```
 
 You can also specify csproj files to be affected.
 ```yml
-      - uses: vakus/dotnet-deployment-versioning@v1.2.1
+      - uses: vakus/dotnet-deployment-versioning@v1.2.2
         with:
           #You can use Glob pattern string to find csproj files
           dotnet_project_files: "**/*.csproj"
@@ -32,9 +33,16 @@ You can also specify csproj files to be affected.
 
 If you do not want the script to push changes
 ```yml
-      - uses: vakus/dotnet-deployment-versioning@v1.2.1
+      - uses: vakus/dotnet-deployment-versioning@v1.2.2
         with:
           auto_push: "false"
+```
+
+If you want the changes to not be commited
+```yml
+      - uses: vakus/dotnet-deployment-versioning@v1.2.2
+        with:
+          create_commit: "false"
 ```
 
 ## Related
