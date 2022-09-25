@@ -116,18 +116,22 @@ async function gitPushAll() {
 
 async function gitTagVersion(version) {
   core.info(`creating tag ${version}`);
-  core.debug(await execFile('git', ['-c', "user.name='dotnet-deployment-versioning'", '-c', "user.email='actions@users.noreply.github.com'", 'tag', version, '-m', version]));
+  core.debug(await execFile('git', ['-c', "user.name='dotnet-deployment-versioning'", '-c', "user.email='actions@users.noreply.github.com'", 'tag', '--no-sign', version, '-m', version]));
 }
 
 async function gitStageAndCommit(changedFiles, version) {
-  for (const file of changedFiles) {
-    core.debug(`adding file to commit ${file}`);
-    core.debug(await execFile('git', ['add', file]));
+  const create_commit = (core.getInput("create_commit") || 'true').toLowerCase();
+
+  if(create_commit == 'true'){
+    for (const file of changedFiles) {
+      core.debug(`adding file to commit ${file}`);
+      core.debug(await execFile('git', ['add', file]));
+    }
+  
+    core.debug(await execFile('git', ['status']));
+  
+    core.debug(await execFile('git', ['-c', "user.name='dotnet-deployment-versioning'", '-c', "user.email='actions@users.noreply.github.com'", 'commit', '-m', `Bumped up versions to ${version}`, '--no-gpg-sign']));
   }
-
-  core.debug(await execFile('git', ['status']));
-
-  core.debug(await execFile('git', ['-c', "user.name='dotnet-deployment-versioning'", '-c', "user.email='actions@users.noreply.github.com'", 'commit', '-m', `Bumped up versions to ${version}`, '--no-gpg-sign']));
 }
 function dotnetUpdateProjects(version) {
   const versionFileSearch = core.getInput("dotnet_project_files") || "**/*.csproj";
