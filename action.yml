@@ -13,6 +13,10 @@ inputs:
     description: 'should bump up automatically push changes'
     required: false
     default: 'true'
+  create_commit:
+    description: 'should bump up create new commit. If true will create new commit, otherwise will leave uncommited changes'
+    required: false
+    default: 'true'
 runs:
   using: 'node16'
   main: 'dist/index.js'

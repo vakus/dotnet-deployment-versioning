@@ -7,10 +7,34 @@ const crypto = require('crypto');
 
 const { run } = require("./index");
 
+test('update csproj without commit', async () => {
+  const myTestDir = createCleanTestRepository();
+
+  process.env['INPUT_AUTO_PUSH'] = 'false';
+  process.env['INPUT_CREATE_COMMIT'] = 'false';
+  process.env['GITHUB_REF'] = 'test';
+
+  await runBumpup(myTestDir);
+
+  const status = cp.execSync('git status', {
+    cwd: myTestDir
+  }).toString();
+
+  expect(status).toContain("Changes not staged for commit:");
+  expect(status).toContain("no changes added to commit");
+
+  const author = cp.execSync('git log -1 --pretty=format:"%an <%ae>"', {
+    cwd: myTestDir
+  }).toString();
+
+  expect(author).not.toBe("dotnet-deployment-versioning <actions@users.noreply.github.com>");
+});
+
 test('update csproj without push', async () => {
   const myTestDir = createCleanTestRepository();
 
   process.env['INPUT_AUTO_PUSH'] = 'false';
+  process.env['INPUT_CREATE_COMMIT'] = 'true';
   process.env['GITHUB_REF'] = 'test';
 
   await runBumpup(myTestDir);
@@ -35,6 +59,7 @@ test('update csproj on detached head', async () => {
   const myTestDir = createCleanTestRepository();
 
   process.env['INPUT_AUTO_PUSH'] = 'false';
+  process.env['INPUT_CREATE_COMMIT'] = 'true';
   process.env['GITHUB_REF'] = 'test';
 
   cp.execSync('git checkout 1d27974c187b5d87ad1a0e9202818db8c45f5c7e', {
@@ -55,6 +80,7 @@ test('update triggered by tag is ignored', async() => {
   const myTestDir = createCleanTestRepository();
 
   process.env['INPUT_AUTO_PUSH'] = 'false';
+  process.env['INPUT_CREATE_COMMIT'] = 'true';
   process.env['GITHUB_REF'] = 'refs/tags/test';
 
   await runBumpup(myTestDir);
