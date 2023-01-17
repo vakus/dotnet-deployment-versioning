@@ -11,35 +11,53 @@ async function run() {
       core.info(`Run triggered by tag ${process.env.GITHUB_REF.replace('refs/tags/', '')}. `);
       return;
     }
-    
+
     const ref = await execFile('git', ['rev-parse', '--symbolic-full-name', 'HEAD']);
     //only run if on branch
-    if(ref.stdout == 'HEAD\n'){
+    if (ref.stdout == 'HEAD\n') {
       //we are not on branch, and we can not continue
       core.info("Reference is not on branch, aborting bumping.");
       return;
     }
 
+    const config = getConfiguration();
+
     await gitUpdateRepo();
 
     const version = await generateVersion();
 
-    const changedFiles = dotnetUpdateProjects(version);
+    const changedFiles = dotnetUpdateProjects(config, version);
 
-    await gitStageAndCommit(changedFiles, version);
+    await gitStageAndCommit(config, changedFiles, version);
 
-    await gitTagVersion(version);
+    await gitTagVersion(config, version);
 
-    await gitPushAll();
+    await gitPushAll(config);
   } catch (error) {
     core.setFailed(error.message);
   }
 }
 
-async function gitPushAll() {
-  const auto_push = (core.getInput("auto_push") || "true").toLowerCase();
-  
-  if(auto_push == "true"){
+function getConfiguration(){
+    let config = {
+      commit_username: "dotnet-deployment-versioning",
+      commit_email: "actions@users.noreply.github.com",
+      commit_create: (core.getInput("create_commit") || 'true').toLowerCase() == "true",
+      push_auto: (core.getInput("auto_push") || "true").toLowerCase() == "true",
+      dotnet_project_files: core.getInput("dotnet_project_files") || "**/*.csproj"
+    }
+
+    if(core.getInput("COMMIT_USERNAME") && /^[a-zA-Z0-9\-]*$/.test(core.getInput("COMMIT_USERNAME")))
+      config.commit_username = core.getInput("COMMIT_USERNAME");
+
+    if(core.getInput("COMMIT_EMAIL") && /^[a-zA-Z0-9\-@\.]*$/.test(core.getInput("COMMIT_EMAIL")))
+      config.commit_email = core.getInput("COMMIT_EMAIL")
+
+    return config;
+}
+
+async function gitPushAll(config) {
+  if (config.push_auto) {
     core.info(`pushing commits`);
     core.debug(await execFile('git', ['push', 'origin', '--all']));
     core.info(`pushing tags`);
@@ -47,31 +65,27 @@ async function gitPushAll() {
   }
 }
 
-async function gitTagVersion(version) {
+async function gitTagVersion(config, version) {
   core.info(`creating tag ${version}`);
-  core.debug(await execFile('git', ['-c', "user.name='dotnet-deployment-versioning'", '-c', "user.email='actions@users.noreply.github.com'", 'tag', '--no-sign', version, '-m', version]));
+  core.debug(await execFile('git', ['-c', "user.name='" + config.commit_username + "'", '-c', "user.email='" + config.commit_email + "'", 'tag', '--no-sign', version, '-m', version]));
 }
 
-async function gitStageAndCommit(changedFiles, version) {
-  const create_commit = (core.getInput("create_commit") || 'true').toLowerCase();
-
-  if(create_commit == 'true'){
+async function gitStageAndCommit(config, changedFiles, version) {
+  if (config.commit_create) {
     for (const file of changedFiles) {
       core.debug(`adding file to commit ${file}`);
       core.debug(await execFile('git', ['add', file]));
     }
-  
+
     core.debug(await execFile('git', ['status']));
-  
-    core.debug(await execFile('git', ['-c', "user.name='dotnet-deployment-versioning'", '-c', "user.email='actions@users.noreply.github.com'", 'commit', '-m', `Bumped up versions to ${version}`, '--no-gpg-sign']));
+
+    core.debug(await execFile('git', ['-c', "user.name='" + config.commit_username + "'", '-c', "user.email='" + config.commit_email + "'", 'commit', '-m', `Bumped up versions to ${version}`, '--no-gpg-sign']));
   }
 }
-function dotnetUpdateProjects(version) {
-  const versionFileSearch = core.getInput("dotnet_project_files") || "**/*.csproj";
+function dotnetUpdateProjects(config, version) {
+  core.debug(`Searching for projects using pattern: '${config.dotnet_project_files}'`);
 
-  core.debug(`Searching for projects using pattern: '${versionFileSearch}'`);
-
-  const versionFiles = glob.sync(versionFileSearch, {
+  const versionFiles = glob.sync(config.dotnet_project_files, {
     gitignore: true,
     expandDirectories: true,
     onlyFiles: true,
@@ -118,7 +132,7 @@ async function generateVersion() {
 }
 
 
-if(require.main === module){
+if (require.main === module) {
   run();
 }
 

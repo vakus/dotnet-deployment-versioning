@@ -6,17 +6,25 @@ branding:
   color: blue
 inputs:
   dotnet_project_files:
-    description: 'list of csproj files which should be bumped up. '
+    description: 'list of csproj files which should be bumped up.'
     required: false
     default: '**/*.csproj'
   auto_push:
-    description: 'should bump up automatically push changes'
+    description: 'should bump up automatically push changes.'
     required: false
     default: 'true'
   create_commit:
-    description: 'should bump up create new commit. If true will create new commit, otherwise will leave uncommited changes'
+    description: 'should bump up create new commit. If true will create new commit, otherwise will leave uncommited changes.'
     required: false
     default: 'true'
+  commit_username:
+    description: 'Override default username used to make commit. Must match ^[a-zA-Z0-9\-]*$'
+    required: false
+    default: 'dotnet-deployment-versioning'
+  commit_email:
+    description: 'Override default email used to make commit. Must match ^[a-zA-Z0-9\-@\.]*$'
+    required: false
+    default: 'actions@users.noreply.github.com'
 runs:
   using: 'node16'
   main: 'dist/index.js'

@@ -1,8 +1,8 @@
 const core = require('@actions/core');
 const fs = require('fs');
 
-class Bump{
-    
+class Bump {
+
     versionRex = /<Version>([\S]*)<\/Version>/i;
     packageVersionRex = /<PackageVersion>([\S]*)<\/PackageVersion>/i;
     assemblyVersionRex = /<AssemblyVersion>([\S]*)<\/AssemblyVersion>/i;
@@ -19,11 +19,11 @@ class Bump{
 
     file;
 
-    constructor(file){
+    constructor(file) {
         this.file = file;
     }
 
-    bump(version){
+    bump(version) {
         const originalContent = fs.readFileSync(this.file, "utf-8").toString();
         var bumppedContent = originalContent;
         var modified = false;
@@ -32,7 +32,7 @@ class Bump{
             core.debug(`matching ${k}`);
             const matches = v.exec(bumppedContent);
 
-            if(matches && matches.length === 2){
+            if (matches && matches.length === 2) {
                 core.debug(`match found`);
                 const originVersion = matches[1].toString();
                 core.debug(`original version: ${originVersion}`);
@@ -44,7 +44,7 @@ class Bump{
             }
         });
 
-        if(modified){
+        if (modified) {
             fs.writeFileSync(this.file, bumppedContent, "utf-8");
         }
 
