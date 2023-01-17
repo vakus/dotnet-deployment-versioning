@@ -43,6 +43,7 @@ function getConfiguration(){
       commit_username: "dotnet-deployment-versioning",
       commit_email: "actions@users.noreply.github.com",
       commit_create: (core.getInput("create_commit") || 'true').toLowerCase() == "true",
+      commit_force_no_gpg: (core.getInput("commit_force_no_gpg") || 'false').toLowerCase() == "true",
       push_auto: (core.getInput("auto_push") || "true").toLowerCase() == "true",
       dotnet_project_files: core.getInput("dotnet_project_files") || "**/*.csproj"
     }
@@ -67,7 +68,10 @@ async function gitPushAll(config) {
 
 async function gitTagVersion(config, version) {
   core.info(`creating tag ${version}`);
-  core.debug(await execFile('git', ['-c', "user.name='" + config.commit_username + "'", '-c', "user.email='" + config.commit_email + "'", 'tag', '--no-sign', version, '-m', version]));
+  if(config.commit_force_no_gpg)
+    core.debug(await execFile('git', ['-c', "user.name='" + config.commit_username + "'", '-c', "user.email='" + config.commit_email + "'", 'tag', '--no-sign', version, '-m', version]));
+  else
+    core.debug(await execFile('git', ['-c', "user.name='" + config.commit_username + "'", '-c', "user.email='" + config.commit_email + "'", 'tag', version, '-m', version]));
 }
 
 async function gitStageAndCommit(config, changedFiles, version) {
@@ -79,9 +83,13 @@ async function gitStageAndCommit(config, changedFiles, version) {
 
     core.debug(await execFile('git', ['status']));
 
-    core.debug(await execFile('git', ['-c', "user.name='" + config.commit_username + "'", '-c', "user.email='" + config.commit_email + "'", 'commit', '-m', `Bumped up versions to ${version}`, '--no-gpg-sign']));
+    if(config.commit_force_no_gpg)
+      core.debug(await execFile('git', ['-c', "user.name='" + config.commit_username + "'", '-c', "user.email='" + config.commit_email + "'", 'commit', '-m', `Bumped up versions to ${version}`, '--no-gpg-sign']));
+    else
+      core.debug(await execFile('git', ['-c', "user.name='" + config.commit_username + "'", '-c', "user.email='" + config.commit_email + "'", 'commit', '-m', `Bumped up versions to ${version}`]));
   }
 }
+
 function dotnetUpdateProjects(config, version) {
   core.debug(`Searching for projects using pattern: '${config.dotnet_project_files}'`);
 

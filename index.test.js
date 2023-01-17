@@ -14,6 +14,7 @@ test('update csproj without push with user', async () => {
   process.env['GITHUB_REF'] = 'test';
   process.env['INPUT_COMMIT_USERNAME'] = 'vakus';
   process.env['INPUT_COMMIT_EMAIL'] = 'vakus@users.noreply.github.com';
+  process.env['INPUT_COMMIT_FORCE_NO_GPG'] = 'true';
 
   await runBumpup(myTestDir);
 
@@ -39,6 +40,7 @@ test('update csproj without push with user invalid chars', async () => {
   process.env['GITHUB_REF'] = 'test';
   process.env['INPUT_COMMIT_USERNAME'] = 'chr\'; echo \'test\';#';
   process.env['INPUT_COMMIT_EMAIL'] = 'chr\'; echo \'test\';#@users.noreply.github.com';
+  process.env['INPUT_COMMIT_FORCE_NO_GPG'] = 'true';
 
   await runBumpup(myTestDir);
 
@@ -63,6 +65,7 @@ test('update csproj without commit', async () => {
   process.env['INPUT_AUTO_PUSH'] = 'false';
   process.env['INPUT_CREATE_COMMIT'] = 'false';
   process.env['GITHUB_REF'] = 'test';
+  process.env['INPUT_COMMIT_FORCE_NO_GPG'] = 'true';
 
   await runBumpup(myTestDir);
 
@@ -86,6 +89,7 @@ test('update csproj without push', async () => {
   process.env['INPUT_AUTO_PUSH'] = 'false';
   process.env['INPUT_CREATE_COMMIT'] = 'true';
   process.env['GITHUB_REF'] = 'test';
+  process.env['INPUT_COMMIT_FORCE_NO_GPG'] = 'true';
 
   await runBumpup(myTestDir);
 
@@ -111,6 +115,7 @@ test('update csproj on detached head', async () => {
   process.env['INPUT_AUTO_PUSH'] = 'false';
   process.env['INPUT_CREATE_COMMIT'] = 'true';
   process.env['GITHUB_REF'] = 'test';
+  process.env['INPUT_COMMIT_FORCE_NO_GPG'] = 'true';
 
   cp.execSync('git checkout 1d27974c187b5d87ad1a0e9202818db8c45f5c7e', {
     cwd: myTestDir
@@ -132,6 +137,7 @@ test('update triggered by tag is ignored', async () => {
   process.env['INPUT_AUTO_PUSH'] = 'false';
   process.env['INPUT_CREATE_COMMIT'] = 'true';
   process.env['GITHUB_REF'] = 'refs/tags/test';
+  process.env['INPUT_COMMIT_FORCE_NO_GPG'] = 'true';
 
   await runBumpup(myTestDir);
 

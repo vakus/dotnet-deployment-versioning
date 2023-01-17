@@ -20,12 +20,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: vakus/dotnet-deployment-versioning@v1.2.3
+      - uses: vakus/dotnet-deployment-versioning@v1.3.0
 ```
 
 You can also specify csproj files to be affected.
 ```yml
-      - uses: vakus/dotnet-deployment-versioning@v1.2.3
+      - uses: vakus/dotnet-deployment-versioning@v1.3.0
         with:
           #You can use Glob pattern string to find csproj files
           dotnet_project_files: "**/*.csproj"
@@ -33,16 +33,31 @@ You can also specify csproj files to be affected.
 
 If you do not want the script to push changes
 ```yml
-      - uses: vakus/dotnet-deployment-versioning@v1.2.3
+      - uses: vakus/dotnet-deployment-versioning@v1.3.0
         with:
           auto_push: "false"
 ```
 
 If you want the changes to not be commited
 ```yml
-      - uses: vakus/dotnet-deployment-versioning@v1.2.3
+      - uses: vakus/dotnet-deployment-versioning@v1.3.0
         with:
           create_commit: "false"
+```
+
+If you want to change the user committing changes
+```yml
+      - uses: vakus/dotnet-deployment-versioning@v1.3.0
+        with:
+          commit_username: "vakus"
+          commit_email: "vakus@users.noreply.github.com"
+```
+
+If you need to ignore signing key when running
+```yml
+      - uses: vakus/dotnet-deployment-versioning@v1.3.0
+        with:
+          commit_force_no_gpg: "true"
 ```
 
 ## Related

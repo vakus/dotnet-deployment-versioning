@@ -25,6 +25,10 @@ inputs:
     description: 'Override default email used to make commit. Must match ^[a-zA-Z0-9\-@\.]*$'
     required: false
     default: 'actions@users.noreply.github.com'
+  commit_force_no_gpg:
+    description: 'use --no-gpg-sign and --no-sign when committing'
+    required: false
+    default: 'false'
 runs:
   using: 'node16'
   main: 'dist/index.js'
