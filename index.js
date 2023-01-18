@@ -40,19 +40,25 @@ async function run() {
 
 function getConfiguration(){
     let config = {
-      commit_username: "dotnet-deployment-versioning",
-      commit_email: "actions@users.noreply.github.com",
+      commit_username: "",
+      commit_email: "",
       commit_create: (core.getInput("create_commit") || 'true').toLowerCase() == "true",
       commit_force_no_gpg: (core.getInput("commit_force_no_gpg") || 'false').toLowerCase() == "true",
       push_auto: (core.getInput("auto_push") || "true").toLowerCase() == "true",
-      dotnet_project_files: core.getInput("dotnet_project_files") || "**/*.csproj"
+      dotnet_project_files: core.getInput("dotnet_project_files") || "**/*.csproj",
+      git_extra_config: []
     }
 
-    if(core.getInput("COMMIT_USERNAME") && /^[a-zA-Z0-9\-]*$/.test(core.getInput("COMMIT_USERNAME")))
+    if(/^[a-zA-Z0-9\-]*$/.test(core.getInput("COMMIT_USERNAME")))
       config.commit_username = core.getInput("COMMIT_USERNAME");
 
-    if(core.getInput("COMMIT_EMAIL") && /^[a-zA-Z0-9\-@\.]*$/.test(core.getInput("COMMIT_EMAIL")))
+    if(/^[a-zA-Z0-9\-@\.]*$/.test(core.getInput("COMMIT_EMAIL")))
       config.commit_email = core.getInput("COMMIT_EMAIL")
+
+    if(config.commit_username)
+      config.git_extra_config.push("-c", `user.name='${config.commit_username}'`);
+    if(config.commit_email)
+      config.git_extra_config.push("-c", `user.email='${config.commit_email}'`);
 
     return config;
 }
@@ -69,9 +75,9 @@ async function gitPushAll(config) {
 async function gitTagVersion(config, version) {
   core.info(`creating tag ${version}`);
   if(config.commit_force_no_gpg)
-    core.debug(await execFile('git', ['-c', "user.name='" + config.commit_username + "'", '-c', "user.email='" + config.commit_email + "'", 'tag', '--no-sign', version, '-m', version]));
+    core.debug(await execFile('git', config.git_extra_config.concat(['tag', '--no-sign', version, '-m', version])));
   else
-    core.debug(await execFile('git', ['-c', "user.name='" + config.commit_username + "'", '-c', "user.email='" + config.commit_email + "'", 'tag', version, '-m', version]));
+    core.debug(await execFile('git', config.git_extra_config.concat(['tag', version, '-m', version])));
 }
 
 async function gitStageAndCommit(config, changedFiles, version) {
@@ -84,9 +90,9 @@ async function gitStageAndCommit(config, changedFiles, version) {
     core.debug(await execFile('git', ['status']));
 
     if(config.commit_force_no_gpg)
-      core.debug(await execFile('git', ['-c', "user.name='" + config.commit_username + "'", '-c', "user.email='" + config.commit_email + "'", 'commit', '-m', `Bumped up versions to ${version}`, '--no-gpg-sign']));
+      core.debug(await execFile('git', config.git_extra_config.concat(['commit', '-m', `Bumped up versions to ${version}`, '--no-gpg-sign'])));
     else
-      core.debug(await execFile('git', ['-c', "user.name='" + config.commit_username + "'", '-c', "user.email='" + config.commit_email + "'", 'commit', '-m', `Bumped up versions to ${version}`]));
+      core.debug(await execFile('git', config.git_extra_config.concat(['commit', '-m', `Bumped up versions to ${version}`])));
   }
 }
 
