@@ -127,6 +127,8 @@ function getConfiguration(){
     if(config.commit_email)
       config.git_extra_config.push("-c", `user.email='${config.commit_email}'`);
 
+    core.debug(config);
+
     return config;
 }
 
