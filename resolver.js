@@ -23,7 +23,7 @@ class Resolver {
                 }
 
                 if(!config.commit_username && !gitUsername){
-                    core.info("It appears that there is no username to be used while creating commit.\n" +
+                    core.warning("It appears that there is no username to be used while creating commit.\n" +
                     "Either use `git config user.name=\"nickname\"`\n" +
                     "or set `commit_username` parameter within the workflow to be not-blank.");
                     return true;
@@ -43,7 +43,7 @@ class Resolver {
                 }
 
                 if(!config.commit_email && !gitEmail){
-                    core.info("It appears that there is no email to be used while creating commit.\n" +
+                    core.warning("It appears that there is no email to be used while creating commit.\n" +
                     "Either use `git config user.email=\"email@example.com\"`\n" +
                     "or set `commit_email` parameter within the workflow to be not-blank.");
                     return true;
@@ -54,14 +54,14 @@ class Resolver {
         },
         {
             async HandleException(config, error){
-                core.info("An unrecoverable error has occurred within this workflow.");
-                core.info("If this problem repeats please report it at https://github.com/vakus/dotnet-deployment-versioning/issues/new")
-                core.info("Please attach log from this workflow in your bug report.");
-                core.info("Diagnostic information:")
-                core.info("Git version: " + await execFile('git', ['--version']));
-                core.info("Git status: " + await execFile('git', ['status']));
-                core.info("Workflow config: " + config);
-                core.info("Bump generated version: " + config.generated_version);
+                core.warning("An unrecoverable error has occurred within this workflow.\n" + 
+                "If this problem repeats please report it at https://github.com/vakus/dotnet-deployment-versioning/issues/new\n" +
+                "Please attach log from this workflow in your bug report.\n" + 
+                "Diagnostic information:\n" +
+                "Git version: " + await execFile('git', ['--version']) + "\n" +
+                "Git status: " + await execFile('git', ['status']) + "\n" +
+                "Workflow config: " + config + "\n" +
+                "Bump generated version: " + config.generated_version);
                 return true
             }
         }
