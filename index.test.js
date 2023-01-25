@@ -19,6 +19,13 @@ test.each([
 ])('update csproj by username ($commit_username) and email ($commit_email) is commited by default user', async ({commit_username, commit_email}) => {
   const myTestDir = createCleanTestRepository();
 
+  cp.execSync('git config user.name "dotnet-deployment-versioning"', {
+    cwd: myTestDir
+  });
+  cp.execSync('git config user.email "dotnet-deployment-versioning@users.noreply.github.com"', {
+    cwd: myTestDir
+  });
+
   process.env['INPUT_AUTO_PUSH'] = 'false';
   process.env['GITHUB_REF'] = 'test';
   process.env['INPUT_COMMIT_USERNAME'] = commit_username;
@@ -38,8 +45,12 @@ test.each([
     cwd: myTestDir
   }).toString();
 
-  const username = cp.execSync('git config --get user.name').toString().trim();
-  const email = cp.execSync('git config --get user.email').toString().trim();
+  const username = cp.execSync('git config --get user.name', {
+    cwd: myTestDir
+  }).toString().trim();
+  const email = cp.execSync('git config --get user.email', {
+    cwd: myTestDir
+  }).toString().trim();
 
   expect(author).toBe(username + " <" + email + ">");
 });
@@ -182,10 +193,14 @@ function createCleanTestRepository() {
 afterAll(() => {
   fs.readdirSync(os.tmpdir())
     .filter(name => name.startsWith("dotnet-deployment-versioning-test"))
-    .map(f => fs.rmSync(path.join(os.tmpdir(), f), { recursive: true }))
+    .map(f => fs.rmSync(path.join(os.tmpdir(), f), { recursive: true }));
 });
 
 beforeAll(() => {
+  fs.readdirSync(os.tmpdir())
+    .filter(name => name.startsWith("dotnet-deployment-versioning-test"))
+    .map(f => fs.rmSync(path.join(os.tmpdir(), f), { recursive: true }));
+
   cp.execSync('git clone https://github.com/vakus/dotnet-deployment-versioning-test.git', {
     cwd: os.tmpdir()
   });
