@@ -20,12 +20,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: vakus/dotnet-deployment-versioning@v1.3.0
+      - uses: vakus/dotnet-deployment-versioning@v1.3.1
 ```
 
 You can also specify csproj files to be affected.
 ```yml
-      - uses: vakus/dotnet-deployment-versioning@v1.3.0
+      - uses: vakus/dotnet-deployment-versioning@v1.3.1
         with:
           #You can use Glob pattern string to find csproj files
           dotnet_project_files: "**/*.csproj"
@@ -34,7 +34,7 @@ You can also specify csproj files to be affected.
 If you do not want the script to push changes, but instead do all the pushing manually.
 This can be used to only tag and push change commit, if build and test passes
 ```yml
-      - uses: vakus/dotnet-deployment-versioning@v1.3.0
+      - uses: vakus/dotnet-deployment-versioning@v1.3.1
         with:
           # this will not push commits nor tags as part of the workflow
           auto_push: "false"
@@ -49,14 +49,14 @@ This can be used to only tag and push change commit, if build and test passes
 
 If you want the changes to not be commited
 ```yml
-      - uses: vakus/dotnet-deployment-versioning@v1.3.0
+      - uses: vakus/dotnet-deployment-versioning@v1.3.1
         with:
           create_commit: "false"
 ```
 
 If you want to change the user committing changes
 ```yml
-      - uses: vakus/dotnet-deployment-versioning@v1.3.0
+      - uses: vakus/dotnet-deployment-versioning@v1.3.1
         with:
           commit_username: "vakus"
           commit_email: "vakus@users.noreply.github.com"
@@ -64,7 +64,7 @@ If you want to change the user committing changes
 
 If you need to ignore signing key when running
 ```yml
-      - uses: vakus/dotnet-deployment-versioning@v1.3.0
+      - uses: vakus/dotnet-deployment-versioning@v1.3.1
         with:
           commit_force_no_gpg: "true"
 ```
