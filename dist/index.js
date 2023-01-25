@@ -70,8 +70,10 @@ const util = __nccwpck_require__(3837);
 const execFile = util.promisify((__nccwpck_require__(2081).execFile));
 const glob = __nccwpck_require__(1957);
 const { Bump } = __nccwpck_require__(1043);
+const { Resolver } = __nccwpck_require__(6333);
 
 async function run() {
+  let config;
   try {
     //prevent self triggering
     if (process.env.GITHUB_REF?.startsWith('refs/tags/') ?? false) {
@@ -87,39 +89,50 @@ async function run() {
       return;
     }
 
-    const config = getConfiguration();
+    config = getConfiguration();
 
     await gitUpdateRepo();
 
-    const version = await generateVersion();
+    config.generated_version = await generateVersion();
 
-    const changedFiles = dotnetUpdateProjects(config, version);
+    const changedFiles = dotnetUpdateProjects(config);
 
-    await gitStageAndCommit(config, changedFiles, version);
+    await gitStageAndCommit(config, changedFiles);
 
-    await gitTagVersion(config, version);
+    await gitTagVersion(config);
 
     await gitPushAll(config);
   } catch (error) {
     core.setFailed(error.message);
+    core.debug(error);
+    core.info("An error occurred while attempting to bump up version.");
+    await Resolver.HandleException(config, error);
   }
 }
 
 function getConfiguration(){
     let config = {
-      commit_username: "dotnet-deployment-versioning",
-      commit_email: "actions@users.noreply.github.com",
+      commit_username: "",
+      commit_email: "",
       commit_create: (core.getInput("create_commit") || 'true').toLowerCase() == "true",
       commit_force_no_gpg: (core.getInput("commit_force_no_gpg") || 'false').toLowerCase() == "true",
       push_auto: (core.getInput("auto_push") || "true").toLowerCase() == "true",
-      dotnet_project_files: core.getInput("dotnet_project_files") || "**/*.csproj"
+      dotnet_project_files: core.getInput("dotnet_project_files") || "**/*.csproj",
+      git_extra_config: []
     }
 
-    if(core.getInput("COMMIT_USERNAME") && /^[a-zA-Z0-9\-]*$/.test(core.getInput("COMMIT_USERNAME")))
+    if(/^[a-zA-Z0-9\-]*$/.test(core.getInput("COMMIT_USERNAME")))
       config.commit_username = core.getInput("COMMIT_USERNAME");
 
-    if(core.getInput("COMMIT_EMAIL") && /^[a-zA-Z0-9\-@\.]*$/.test(core.getInput("COMMIT_EMAIL")))
+    if(/^[a-zA-Z0-9\-@\.]*$/.test(core.getInput("COMMIT_EMAIL")))
       config.commit_email = core.getInput("COMMIT_EMAIL")
+
+    if(config.commit_username)
+      config.git_extra_config.push("-c", `user.name='${config.commit_username}'`);
+    if(config.commit_email)
+      config.git_extra_config.push("-c", `user.email='${config.commit_email}'`);
+
+    core.debug(config);
 
     return config;
 }
@@ -133,15 +146,15 @@ async function gitPushAll(config) {
   }
 }
 
-async function gitTagVersion(config, version) {
-  core.info(`creating tag ${version}`);
+async function gitTagVersion(config) {
+  core.info(`creating tag ${config.generated_version}`);
   if(config.commit_force_no_gpg)
-    core.debug(await execFile('git', ['-c', "user.name='" + config.commit_username + "'", '-c', "user.email='" + config.commit_email + "'", 'tag', '--no-sign', version, '-m', version]));
+    core.debug(await execFile('git', config.git_extra_config.concat(['tag', '--no-sign', config.generated_version, '-m', config.generated_version])));
   else
-    core.debug(await execFile('git', ['-c', "user.name='" + config.commit_username + "'", '-c', "user.email='" + config.commit_email + "'", 'tag', version, '-m', version]));
+    core.debug(await execFile('git', config.git_extra_config.concat(['tag', config.generated_version, '-m', config.generated_version])));
 }
 
-async function gitStageAndCommit(config, changedFiles, version) {
+async function gitStageAndCommit(config, changedFiles) {
   if (config.commit_create) {
     for (const file of changedFiles) {
       core.debug(`adding file to commit ${file}`);
@@ -151,13 +164,13 @@ async function gitStageAndCommit(config, changedFiles, version) {
     core.debug(await execFile('git', ['status']));
 
     if(config.commit_force_no_gpg)
-      core.debug(await execFile('git', ['-c', "user.name='" + config.commit_username + "'", '-c', "user.email='" + config.commit_email + "'", 'commit', '-m', `Bumped up versions to ${version}`, '--no-gpg-sign']));
+      core.debug(await execFile('git', config.git_extra_config.concat(['commit', '-m', `Bumped up versions to ${config.generated_version}`, '--no-gpg-sign'])));
     else
-      core.debug(await execFile('git', ['-c', "user.name='" + config.commit_username + "'", '-c', "user.email='" + config.commit_email + "'", 'commit', '-m', `Bumped up versions to ${version}`]));
+      core.debug(await execFile('git', config.git_extra_config.concat(['commit', '-m', `Bumped up versions to ${config.generated_version}`])));
   }
 }
 
-function dotnetUpdateProjects(config, version) {
+function dotnetUpdateProjects(config) {
   core.debug(`Searching for projects using pattern: '${config.dotnet_project_files}'`);
 
   const versionFiles = glob.sync(config.dotnet_project_files, {
@@ -170,7 +183,7 @@ function dotnetUpdateProjects(config, version) {
 
   const changedFiles = versionFiles.filter(file => {
     let bump = new Bump(file);
-    return bump.bump(version);
+    return bump.bump(config.generated_version);
   });
 
   return changedFiles;
@@ -6223,6 +6236,83 @@ function wrappy (fn, cb) {
   }
 }
 
+
+/***/ }),
+
+/***/ 6333:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const core = __nccwpck_require__(2186);
+const util = __nccwpck_require__(3837);
+const execFile = util.promisify((__nccwpck_require__(2081).execFile));
+
+class Resolver {
+
+    static async HandleException(config, error){
+        for(const resolver of Resolver.__resolvers){
+            if(resolver.HandleException && await resolver.HandleException(config, error))
+                return;
+        }
+    }
+
+    static __resolvers = [
+        {
+            async HandleException(config, error){
+                let gitUsername = null;
+
+                try{
+                    gitUsername = (await execFile('git', ['config', '--get', 'user.name'])).stdout;
+                }catch(_){
+                    //if username is not set, this will throw
+                }
+
+                if(!config.commit_username && !gitUsername){
+                    core.warning("It appears that there is no username to be used while creating commit.\n" +
+                    "Either use `git config user.name=\"nickname\"`\n" +
+                    "or set `commit_username` parameter within the workflow to be not-blank.");
+                    return true;
+                }
+                
+                return false;
+            }
+        },
+        {
+            async HandleException(config, error){
+                let gitEmail = null;
+
+                try{
+                    gitEmail = (await execFile('git', ['config', '--get', 'user.email'])).stdout; 
+                }catch(_){
+                    //if username is not set, this will throw
+                }
+
+                if(!config.commit_email && !gitEmail){
+                    core.warning("It appears that there is no email to be used while creating commit.\n" +
+                    "Either use `git config user.email=\"email@example.com\"`\n" +
+                    "or set `commit_email` parameter within the workflow to be not-blank.");
+                    return true;
+                }
+
+                return false;
+            }
+        },
+        {
+            async HandleException(config, error){
+                core.warning("An unrecoverable error has occurred within this workflow.\n" + 
+                "If this problem repeats please report it at https://github.com/vakus/dotnet-deployment-versioning/issues/new\n" +
+                "Please attach log from this workflow in your bug report.\n" + 
+                "Diagnostic information:\n" +
+                "Git version: " + await execFile('git', ['--version']) + "\n" +
+                "Git status: " + await execFile('git', ['status']) + "\n" +
+                "Workflow config: " + config + "\n" +
+                "Bump generated version: " + config.generated_version);
+                return true
+            }
+        }
+    ]
+}
+
+module.exports.Resolver = Resolver;
 
 /***/ }),
 

@@ -3,8 +3,10 @@ const util = require('util');
 const execFile = util.promisify(require('child_process').execFile);
 const glob = require("glob");
 const { Bump } = require('./bump');
+const { Resolver } = require('./resolver');
 
 async function run() {
+  let config;
   try {
     //prevent self triggering
     if (process.env.GITHUB_REF?.startsWith('refs/tags/') ?? false) {
@@ -20,39 +22,50 @@ async function run() {
       return;
     }
 
-    const config = getConfiguration();
+    config = getConfiguration();
 
     await gitUpdateRepo();
 
-    const version = await generateVersion();
+    config.generated_version = await generateVersion();
 
-    const changedFiles = dotnetUpdateProjects(config, version);
+    const changedFiles = dotnetUpdateProjects(config);
 
-    await gitStageAndCommit(config, changedFiles, version);
+    await gitStageAndCommit(config, changedFiles);
 
-    await gitTagVersion(config, version);
+    await gitTagVersion(config);
 
     await gitPushAll(config);
   } catch (error) {
     core.setFailed(error.message);
+    core.debug(error);
+    core.info("An error occurred while attempting to bump up version.");
+    await Resolver.HandleException(config, error);
   }
 }
 
 function getConfiguration(){
     let config = {
-      commit_username: "dotnet-deployment-versioning",
-      commit_email: "actions@users.noreply.github.com",
+      commit_username: "",
+      commit_email: "",
       commit_create: (core.getInput("create_commit") || 'true').toLowerCase() == "true",
       commit_force_no_gpg: (core.getInput("commit_force_no_gpg") || 'false').toLowerCase() == "true",
       push_auto: (core.getInput("auto_push") || "true").toLowerCase() == "true",
-      dotnet_project_files: core.getInput("dotnet_project_files") || "**/*.csproj"
+      dotnet_project_files: core.getInput("dotnet_project_files") || "**/*.csproj",
+      git_extra_config: []
     }
 
-    if(core.getInput("COMMIT_USERNAME") && /^[a-zA-Z0-9\-]*$/.test(core.getInput("COMMIT_USERNAME")))
+    if(/^[a-zA-Z0-9\-]*$/.test(core.getInput("COMMIT_USERNAME")))
       config.commit_username = core.getInput("COMMIT_USERNAME");
 
-    if(core.getInput("COMMIT_EMAIL") && /^[a-zA-Z0-9\-@\.]*$/.test(core.getInput("COMMIT_EMAIL")))
+    if(/^[a-zA-Z0-9\-@\.]*$/.test(core.getInput("COMMIT_EMAIL")))
       config.commit_email = core.getInput("COMMIT_EMAIL")
+
+    if(config.commit_username)
+      config.git_extra_config.push("-c", `user.name='${config.commit_username}'`);
+    if(config.commit_email)
+      config.git_extra_config.push("-c", `user.email='${config.commit_email}'`);
+
+    core.debug(config);
 
     return config;
 }
@@ -66,15 +79,15 @@ async function gitPushAll(config) {
   }
 }
 
-async function gitTagVersion(config, version) {
-  core.info(`creating tag ${version}`);
+async function gitTagVersion(config) {
+  core.info(`creating tag ${config.generated_version}`);
   if(config.commit_force_no_gpg)
-    core.debug(await execFile('git', ['-c', "user.name='" + config.commit_username + "'", '-c', "user.email='" + config.commit_email + "'", 'tag', '--no-sign', version, '-m', version]));
+    core.debug(await execFile('git', config.git_extra_config.concat(['tag', '--no-sign', config.generated_version, '-m', config.generated_version])));
   else
-    core.debug(await execFile('git', ['-c', "user.name='" + config.commit_username + "'", '-c', "user.email='" + config.commit_email + "'", 'tag', version, '-m', version]));
+    core.debug(await execFile('git', config.git_extra_config.concat(['tag', config.generated_version, '-m', config.generated_version])));
 }
 
-async function gitStageAndCommit(config, changedFiles, version) {
+async function gitStageAndCommit(config, changedFiles) {
   if (config.commit_create) {
     for (const file of changedFiles) {
       core.debug(`adding file to commit ${file}`);
@@ -84,13 +97,13 @@ async function gitStageAndCommit(config, changedFiles, version) {
     core.debug(await execFile('git', ['status']));
 
     if(config.commit_force_no_gpg)
-      core.debug(await execFile('git', ['-c', "user.name='" + config.commit_username + "'", '-c', "user.email='" + config.commit_email + "'", 'commit', '-m', `Bumped up versions to ${version}`, '--no-gpg-sign']));
+      core.debug(await execFile('git', config.git_extra_config.concat(['commit', '-m', `Bumped up versions to ${config.generated_version}`, '--no-gpg-sign'])));
     else
-      core.debug(await execFile('git', ['-c', "user.name='" + config.commit_username + "'", '-c', "user.email='" + config.commit_email + "'", 'commit', '-m', `Bumped up versions to ${version}`]));
+      core.debug(await execFile('git', config.git_extra_config.concat(['commit', '-m', `Bumped up versions to ${config.generated_version}`])));
   }
 }
 
-function dotnetUpdateProjects(config, version) {
+function dotnetUpdateProjects(config) {
   core.debug(`Searching for projects using pattern: '${config.dotnet_project_files}'`);
 
   const versionFiles = glob.sync(config.dotnet_project_files, {
@@ -103,7 +116,7 @@ function dotnetUpdateProjects(config, version) {
 
   const changedFiles = versionFiles.filter(file => {
     let bump = new Bump(file);
-    return bump.bump(version);
+    return bump.bump(config.generated_version);
   });
 
   return changedFiles;
