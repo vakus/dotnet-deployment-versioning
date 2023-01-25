@@ -31,11 +31,20 @@ You can also specify csproj files to be affected.
           dotnet_project_files: "**/*.csproj"
 ```
 
-If you do not want the script to push changes
+If you do not want the script to push changes, but instead do all the pushing manually.
+This can be used to only tag and push change commit, if build and test passes
 ```yml
       - uses: vakus/dotnet-deployment-versioning@v1.3.0
         with:
+          # this will not push commits nor tags as part of the workflow
           auto_push: "false"
+
+      # ... other part of workflow, such as building, testing, etc. ...
+
+      # to push the commit created
+      - run: git push
+      # to push the tags created
+      - run: git push --tags
 ```
 
 If you want the changes to not be commited
