@@ -20,6 +20,10 @@ jobs:
   check-dist:
     runs-on: ubuntu-latest
 
+
+    permissions:
+      contents: write
+
     steps:
       - uses: actions/checkout@v3
 
@@ -39,7 +43,20 @@ jobs:
           if [ "$(git diff --ignore-space-at-eol --ignore-cr-at-eol dist/ | wc -l)" -gt "0" ]; then
             echo "Detected uncommitted changes after build.  See status below:"
             git diff
-            echo "Auto-committing changes..."
-            git commit -a -m "Autobuild dist file."
-            git push
           fi
+
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        id: auto-commit-action
+
+      - name: "Run if changes have been detected"
+        if: steps.auto-commit-action.outputs.changes_detected == 'true'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `Missing changes to dist were detected, your pull request has been updated.`
+            })
+          
