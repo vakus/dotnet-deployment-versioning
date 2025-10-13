@@ -45,5 +45,5 @@ jobs:
             git diff
           fi
 
-      - uses: stefanzweifel/git-auto-commit-action@v6
+      - uses: stefanzweifel/git-auto-commit-action@v7
         id: auto-commit-action
